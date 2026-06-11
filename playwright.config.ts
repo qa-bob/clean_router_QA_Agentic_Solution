@@ -78,7 +78,7 @@ export default defineConfig({
     {
       name: 'tablet',
       use: {
-        ...devices['iPad Mini'],
+        browserName: 'chromium',
         viewport: { width: 768, height: 1024 },
       },
     },
