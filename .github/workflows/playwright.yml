@@ -76,22 +76,26 @@ jobs:
             node -e "
               const r = require('./test-results/results.json');
               const failed = [];
-              function walk(suite) {
+              function walk(suite, file) {
                 if (suite.specs) suite.specs.forEach(spec => {
                   spec.tests.forEach(t => {
                     if (t.status !== 'expected' && t.status !== 'skipped') {
                       const err = t.results && t.results[0] && t.results[0].error;
-                      failed.push('- **' + spec.title + '** [' + t.projectName + ']: ' + (err ? err.message.split('\n')[0] : t.status));
+                      const msg = err ? err.message.split('\n')[0] : t.status;
+                      failed.push({ title: spec.title, project: t.projectName, msg, file: file || '' });
                     }
                   });
                 });
-                if (suite.suites) suite.suites.forEach(walk);
+                if (suite.suites) suite.suites.forEach(s => walk(s, file || s.file || suite.file || ''));
               }
-              r.suites.forEach(walk);
+              r.suites.forEach(s => walk(s, s.file || ''));
               if (failed.length === 0) {
-                console.log('All tests passed.');
+                process.stdout.write('All tests passed.\n');
               } else {
-                failed.forEach(f => console.log(f));
+                failed.forEach(f => {
+                  process.stdout.write('- **' + f.title + '** [' + f.project + ']: ' + f.msg + '\n');
+                  process.stderr.write('::error file=' + (f.file||'tests') + '::' + f.title + ' [' + f.project + ']: ' + f.msg.replace(/\n/g,' ') + '\n');
+                });
               }
             " >> $GITHUB_STEP_SUMMARY 2>&1 || echo "Could not parse results JSON." >> $GITHUB_STEP_SUMMARY
           fi
