@@ -56,7 +56,7 @@ test.describe('Site Availability @smoke', () => {
       consoleErrors.push(`[pageerror] ${err.message}`);
     });
 
-    await page.goto(siteConfig.url, { waitUntil: 'load' });
+    await page.goto(siteConfig.url, { waitUntil: 'domcontentloaded' });
 
     // Filter out known benign third-party errors (analytics, ads, tracking scripts)
     const criticalErrors = consoleErrors.filter((err) => {
