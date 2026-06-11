@@ -1,23 +1,29 @@
-﻿{
-    "name":  "Clean Router",
-    "url":  "http://cleanrouter.com",
-    "description":  "",
-    "industry":  "",
-    "hasContactForm":  true,
-    "expectedNavItems":  [
-
-                         ],
-    "viewports":  [
-                      "desktop",
-                      "mobile",
-                      "tablet"
-                  ],
-    "skipVisual":  false,
-    "skipForms":  false,
-    "auth":  {
-                 "required":  false,
-                 "loginUrl":  "",
-                 "username":  "",
-                 "password":  ""
-             }
+{
+  "name": "Clean Router",
+  "url": "https://cleanrouter.com",
+  "description": "AI-powered parental control Wi-Fi 6 router with IntelliFilter™ content filtering",
+  "industry": "Consumer Hardware / Family Safety Technology",
+  "hasContactForm": false,
+  "expectedNavItems": [
+    "Buy Now",
+    "Features",
+    "Reviews",
+    "FAQs",
+    "CleanPhone",
+    "Blog",
+    "My Settings"
+  ],
+  "viewports": [
+    "desktop",
+    "mobile",
+    "tablet"
+  ],
+  "skipVisual": false,
+  "skipForms": true,
+  "auth": {
+    "required": false,
+    "loginUrl": "",
+    "username": "",
+    "password": ""
+  }
 }

@@ -113,8 +113,11 @@ export class NavigationPage extends BasePage {
 
     await toggle.click();
 
-    // Wait briefly for animation
-    await this.page.waitForTimeout(400);
+    // Wait for a nav link to become visible after the menu opens
+    await this.page.locator('nav a[href], [role="navigation"] a[href]')
+      .first()
+      .waitFor({ state: 'visible', timeout: 3_000 })
+      .catch(() => null);
   }
 
   // ── Link reachability ────────────────────────────────────────────────────────

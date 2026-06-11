@@ -2,11 +2,37 @@
 
 This repository is a **Playwright + TypeScript regression test suite** for the website defined in `site.config.json`. It follows a **Page Object Model (POM)** architecture and is structured for agentic execution by Claude Code.
 
+See @README.md for full project overview, setup, and architecture.
+See @AGENTS.md for the agent catalog and frontmatter reference.
+See @Skills.md for the skills/slash-command catalog and frontmatter reference.
+See @.github/CONTRIBUTING.md for contributor rules and PR process.
+
 ---
 
 ## Project Purpose
 
-Build and maintain a comprehensive GUI, functional, and regression test suite for one B2B SaaS website. Tests must cover every discoverable feature of the site without requiring account creation or actual form submission.
+Build and maintain a comprehensive GUI, functional, and regression test suite for **CleanRouter** (`https://cleanrouter.com`) — an AI-powered parental control Wi-Fi 6 router. Tests must cover every discoverable feature of the site without requiring account creation or actual form submission.
+
+### Site Reference (cleanrouter.com)
+
+| Detail | Value |
+|--------|-------|
+| H1 | "Ultimate Parental Controls" |
+| Nav links | Buy Now, Features, Reviews, FAQs, CleanPhone, Blog, My Settings |
+| FAQ count | 10 questions (anchor: `#faqs`) |
+| Trust stats | 50,000+ families · 100,000+ children · 1,200+ reviews |
+| Contact | No form — email only: support@cleantechnology.io |
+| Purchase | `/purchase/#Plan_Select` |
+| Key CTAs | "Protect Your Family Today" · "Try for FREE today!" |
+| `hasContactForm` | false (`skipForms: true` in site.config.json) |
+
+### Available Agents
+
+See [AGENTS.md](./AGENTS.md) — `site-analyzer` and `test-generator` in `.claude/agents/`.
+
+### Available Skills
+
+See [Skills.md](./Skills.md) — `/analyze-site`, `/generate-full-suite`, `/run-smoke`, `/update-baseline`, `/generate-report`.
 
 ---
 
@@ -26,6 +52,7 @@ Build and maintain a comprehensive GUI, functional, and regression test suite fo
 | `tests/functional/` | @functional — business logic, user flows |
 | `tests/visual/` | @visual — screenshot regression |
 | `tests/responsive/` | @responsive — layout at mobile/tablet/desktop |
+| `tests/regression/` | @regression — critical content regression |
 | `.claude/commands/` | Slash commands for agentic tasks |
 
 ---
@@ -41,7 +68,7 @@ Build and maintain a comprehensive GUI, functional, and regression test suite fo
 
 ### Tests
 - Import page objects via the custom fixture in `src/fixtures/site.fixture.ts`
-- Tag every test with at least one of: `@smoke`, `@navigation`, `@forms`, `@functional`, `@visual`, `@responsive`
+- Tag every test with at least one of: `@smoke`, `@navigation`, `@forms`, `@functional`, `@visual`, `@responsive`, `@regression`
 - Do not hardcode URLs — always use `baseURL` from Playwright config (which reads `site.config.json`)
 - Never submit forms — test field interactions and validation only
 - Never create accounts or enter real credentials
@@ -62,6 +89,7 @@ npm run test:navigation     # @navigation tests only
 npm run test:forms          # @forms tests only
 npm run test:visual         # @visual tests only
 npm run test:responsive     # @responsive tests only
+npm run test:regression     # @regression tests only
 npm run baseline            # Update visual snapshots
 npm run lint                # ESLint
 npm run typecheck           # TypeScript check
@@ -102,42 +130,7 @@ npm run typecheck           # TypeScript check
 | `@functional` | Business features: pricing, search, video, accordion |
 | `@visual` | Screenshot regression with `toHaveScreenshot()` |
 | `@responsive` | Viewport-specific layout checks |
-
----
-
-## Project Structure
-
-```
-site.config.json
-playwright.config.ts
-src/
-  pages/
-    base.page.ts          # BasePage base class
-    home.page.ts          # HomePage
-    navigation.page.ts    # NavigationPage
-    contact.page.ts       # ContactFormPage
-    <discovered>.page.ts  # One class per additional page
-  fixtures/
-    site.fixture.ts       # Custom test fixtures
-  utils/
-    link-checker.ts
-    visual-helper.ts
-  types/
-    site-config.types.ts
-tests/
-  smoke/
-    site-availability.spec.ts
-  navigation/
-    nav-links.spec.ts
-  forms/
-    contact-form.spec.ts
-  functional/
-    <feature>.spec.ts     # One file per business feature area
-  visual/
-    visual-regression.spec.ts
-  responsive/
-    layout.spec.ts
-```
+| `@regression` | Critical content that must not change unexpectedly |
 
 ---
 
@@ -147,5 +140,5 @@ tests/
 - Create accounts or log in (unless `auth.required: true` in config)
 - Hardcode the base URL in tests
 - Put assertions inside page object methods
-- Use `page.waitForTimeout()` — use `waitForSelector` or Playwright auto-waiting instead
+- Use `page.waitForTimeout()` — use `waitForSelector`, `waitFor`, or Playwright auto-waiting instead
 - Use `any` type without explicit justification

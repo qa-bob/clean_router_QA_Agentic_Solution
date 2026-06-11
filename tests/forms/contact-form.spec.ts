@@ -216,8 +216,8 @@ test.describe('Contact Form @forms', () => {
 
     await submitBtn.click({ force: true });
 
-    // Wait briefly to allow validation messages to appear
-    await page.waitForTimeout(500);
+    // HTML5 validation is synchronous; wait for any page-state effects to settle
+    await page.waitForLoadState('domcontentloaded');
 
     // Check that we're still on the same page (form was NOT submitted)
     expect(

@@ -92,6 +92,41 @@ export async function setViewport(page: Page, viewport: ViewportName): Promise<v
   await page.setViewportSize(VIEWPORTS[viewport]);
 }
 
+// ── Animation stabilization ──────────────────────────────────────────────────
+
+/**
+ * Freeze all page animations and recurring JavaScript timers so that
+ * consecutive screenshots are pixel-identical.
+ *
+ * Handles:
+ *  - CSS animations / transitions (via injected stylesheet)
+ *  - JS-driven carousels and counters (via clearInterval sweep)
+ *
+ * Call this after the page has loaded and content is visible, immediately
+ * before taking a screenshot.
+ */
+export async function stabilizePage(page: Page): Promise<void> {
+  // Stop all CSS animations and transitions
+  await page.addStyleTag({
+    content: `*, *::before, *::after {
+      animation: none !important;
+      animation-play-state: paused !important;
+      transition: none !important;
+    }`,
+  });
+
+  // Clear repeating setInterval timers (carousel auto-advance, counter ticks, etc.)
+  // Note: we do NOT clear setTimeout — those are used for one-time page initialization
+  // and clearing them causes non-deterministic content state.
+  await page.evaluate(() => {
+    const highestId = window.setInterval(() => {}, 0) as unknown as number;
+    for (let i = 0; i <= highestId; i++) window.clearInterval(i);
+  });
+
+  // Flush one rAF frame so any in-flight DOM updates complete before screenshotting
+  await page.evaluate(() => new Promise<void>(r => requestAnimationFrame(() => r())));
+}
+
 // ── Cookie/banner dismissal ──────────────────────────────────────────────────
 
 /**

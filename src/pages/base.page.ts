@@ -7,7 +7,7 @@
  */
 
 import { type Page, type Locator } from '@playwright/test';
-import type { SiteConfig } from '@types/site-config.types';
+import type { SiteConfig } from '@site-types/site-config.types';
 
 export class BasePage {
   readonly page: Page;
@@ -27,9 +27,9 @@ export class BasePage {
     await this.page.goto(this.url, { waitUntil: 'domcontentloaded' });
   }
 
-  /** Wait until network activity has settled. */
+  /** Wait until the DOM is fully parsed and interactive. */
   async waitForLoad(): Promise<void> {
-    await this.page.waitForLoadState('networkidle');
+    await this.page.waitForLoadState('domcontentloaded');
   }
 
   // ── Page metadata ───────────────────────────────────────────────────────────
@@ -46,8 +46,10 @@ export class BasePage {
    * Compares scrollWidth vs clientWidth on document.body.
    */
   async isResponsive(): Promise<boolean> {
+    // Use documentElement.scrollWidth (not body.scrollWidth) to avoid false
+    // positives from absolutely-positioned ad/tracker elements that extend body.
     const hasHorizontalScroll = await this.page.evaluate<boolean>(() => {
-      return document.body.scrollWidth > document.documentElement.clientWidth;
+      return document.documentElement.scrollWidth > document.documentElement.clientWidth;
     });
     return !hasHorizontalScroll;
   }
