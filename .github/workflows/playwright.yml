@@ -69,35 +69,51 @@ jobs:
       - name: Test Summary
         if: always()
         run: |
-          echo "## Playwright Test Results" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
           if [ -f "test-results/results.json" ]; then
-            echo "### Failed tests" >> $GITHUB_STEP_SUMMARY
+            # Emit ::error:: annotations to stdout — runner interprets them as check-run annotations.
+            # Must NOT be redirected to GITHUB_STEP_SUMMARY or the runner won't process them.
             node -e "
               const r = require('./test-results/results.json');
-              const failed = [];
               function walk(suite, file) {
                 if (suite.specs) suite.specs.forEach(spec => {
                   spec.tests.forEach(t => {
                     if (t.status !== 'expected' && t.status !== 'skipped') {
                       const err = t.results && t.results[0] && t.results[0].error;
-                      const msg = err ? err.message.split('\n')[0] : t.status;
-                      failed.push({ title: spec.title, project: t.projectName, msg, file: file || '' });
+                      const msg = (err ? err.message.split('\n')[0] : t.status).replace(/\n/g,' ').substring(0,200);
+                      console.log('::error file=' + (file||'tests') + '::' + spec.title + ' [' + t.projectName + ']: ' + msg);
                     }
                   });
                 });
-                if (suite.suites) suite.suites.forEach(s => walk(s, file || s.file || suite.file || ''));
+                if (suite.suites) suite.suites.forEach(s => walk(s, file || s.file || ''));
               }
               r.suites.forEach(s => walk(s, s.file || ''));
-              if (failed.length === 0) {
-                process.stdout.write('All tests passed.\n');
-              } else {
-                failed.forEach(f => {
-                  process.stdout.write('- **' + f.title + '** [' + f.project + ']: ' + f.msg + '\n');
-                  process.stderr.write('::error file=' + (f.file||'tests') + '::' + f.title + ' [' + f.project + ']: ' + f.msg.replace(/\n/g,' ') + '\n');
-                });
-              }
-            " >> $GITHUB_STEP_SUMMARY 2>&1 || echo "Could not parse results JSON." >> $GITHUB_STEP_SUMMARY
+            " || true
+
+            # Write markdown summary separately (stdout goes to file, not interpreted as commands)
+            {
+              echo "## Playwright Test Results"
+              echo ""
+              echo "### Failed tests"
+              node -e "
+                const r = require('./test-results/results.json');
+                const failed = [];
+                function walk(suite, file) {
+                  if (suite.specs) suite.specs.forEach(spec => {
+                    spec.tests.forEach(t => {
+                      if (t.status !== 'expected' && t.status !== 'skipped') {
+                        const err = t.results && t.results[0] && t.results[0].error;
+                        const msg = err ? err.message.split('\n')[0] : t.status;
+                        failed.push('- **' + spec.title + '** [' + t.projectName + ']: ' + msg);
+                      }
+                    });
+                  });
+                  if (suite.suites) suite.suites.forEach(s => walk(s, file || s.file || ''));
+                }
+                r.suites.forEach(s => walk(s, s.file || ''));
+                if (failed.length === 0) console.log('All tests passed.');
+                else failed.forEach(f => console.log(f));
+              " || echo "Could not parse results JSON."
+            } >> $GITHUB_STEP_SUMMARY
           fi
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "HTML report available in the \`playwright-report\` artifact." >> $GITHUB_STEP_SUMMARY
