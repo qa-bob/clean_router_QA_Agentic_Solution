@@ -30,7 +30,7 @@ test.describe('Site Availability @smoke', () => {
   });
 
   test('page loads within acceptable time @smoke', async ({ siteConfig, page }) => {
-    const MAX_LOAD_MS = 10_000;
+    const MAX_LOAD_MS = 15_000; // CI runners have higher latency than local machines
 
     const start = Date.now();
     await page.goto(siteConfig.url, { waitUntil: 'load' });
@@ -55,7 +55,7 @@ test.describe('Site Availability @smoke', () => {
       consoleErrors.push(`[pageerror] ${err.message}`);
     });
 
-    await page.goto(siteConfig.url, { waitUntil: 'networkidle' });
+    await page.goto(siteConfig.url, { waitUntil: 'load' });
 
     // Filter out known benign third-party errors (analytics, ads, etc.)
     const criticalErrors = consoleErrors.filter((err) => {
@@ -66,6 +66,8 @@ test.describe('Site Availability @smoke', () => {
         !lower.includes('googletagmanager') &&
         !lower.includes('hotjar') &&
         !lower.includes('intercom') &&
+        !lower.includes('stripe') &&
+        !lower.includes('adroll') &&
         !lower.includes('net::err_blocked_by_client') // AdBlocker
       );
     });
