@@ -99,9 +99,8 @@ test.describe('Site Availability @smoke', () => {
     expect(title.trim().length, 'Page title should be meaningful (>3 chars)').toBeGreaterThan(3);
 
     // Meta description check
-    const metaDescription = await page
-      .locator('meta[name="description"]')
-      .getAttribute('content');
+    const metaTag = page.locator('meta[name="description"]').first();
+    const metaDescription = (await metaTag.count()) > 0 ? await metaTag.getAttribute('content') : null;
 
     // Meta description is a best-practice, not hard requirement — warn if absent
     if (!metaDescription || metaDescription.trim().length === 0) {
