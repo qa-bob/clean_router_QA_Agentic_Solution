@@ -109,7 +109,7 @@ test.describe('Features Section @functional', () => {
     const isTracker = (src: string) => TRACKER_HOSTS.some(h => src.includes(h));
 
     for (const img of images) {
-      const naturalWidth = await img.evaluate<number>(
+      const naturalWidth = await img.evaluate(
         (el) => (el as HTMLImageElement).naturalWidth
       );
       const src = await img.getAttribute('src');

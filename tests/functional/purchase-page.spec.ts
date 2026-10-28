@@ -63,10 +63,7 @@ test.describe('Purchase Page @functional', () => {
     if (await buyNowLink.count() === 0) {
       // Try any "Buy" or "Purchase" link
       const fallback = page.locator('a').filter({ hasText: /buy|purchase|shop/i }).first();
-      if (await fallback.count() === 0) {
-        console.warn('[purchase] No "Buy Now" link found in navigation — skipping');
-        return;
-      }
+      test.skip(await fallback.count() === 0, 'No "Buy Now" link found in navigation');
       const href = await fallback.getAttribute('href');
       expect(href, '"Buy" link should have an href').not.toBeNull();
       return;

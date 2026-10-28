@@ -85,12 +85,9 @@ test.describe('Hero Section @functional', () => {
     await expect(nav, 'Navigation element should exist in the DOM').toBeAttached();
   });
 
-  test('homepage loads with no horizontal overflow at desktop viewport @functional', async ({ homePage, page }) => {
-    const viewport = page.viewportSize();
-    // This check only applies to desktop-width viewports; skip on mobile projects
-    if (!viewport || viewport.width < 768) {
-      return;
-    }
+  test('homepage loads with no horizontal overflow at desktop viewport @functional', async ({ homePage, page }, testInfo) => {
+    // This check only applies to desktop-width viewports
+    test.skip(testInfo.project.name !== 'chromium-desktop', 'Runs only in the "chromium-desktop" project');
     await homePage.navigate();
     // Allow up to 100px of overflow — cleanrouter.com has a known ~80px overhang
     // from a fixed-width element. This threshold catches genuine layout regressions
